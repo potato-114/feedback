@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file, session
+from flask import Flask, render_template, request, redirect, url_for, send_file, session, flash
+from flask_mail import Mail, Message
 
 import Feedback
-from Forms import CreateItemForm, CreateFeedbackForm
+from Forms import CreateItemForm, CreateFeedbackForm, CreateReplyFeedbackForm
 import shelve, Item
 import pandas as pd
 from io import BytesIO
@@ -239,6 +240,40 @@ def delete_feedback(id):
     session['feedback_deleted'] = 'feedback'
 
     return redirect(url_for('retrieve_feedbacks'))
+
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'karangguni9@gmail.com'
+app.config['MAIL_PASSWORD'] = 'mcvh atbd gtoc wlip'
+app.config['MAIL_DEFAULT_SENDER'] = 'karangguni9@gmail.com'
+
+mail = Mail(app)
+
+
+@app.route('/replyFeedback', methods=['POST', 'GET'])
+def reply_feedback():
+    create_reply_feedback_form = CreateReplyFeedbackForm(request.form)
+    if request.method == 'POST':
+        subject = request.form['subject']
+        recipient = request.form['recipient_email']
+        message_body = request.form['message']
+
+        msg = Message(subject, recipients=[recipient])
+        msg.body = message_body
+
+        try:
+            mail.send(msg)
+            session['email_sent'] = 'Email'
+            flash('Email sent successfully!', 'success')
+        except Exception as e:
+            session['error_sending_email'] = 'Email'
+            flash(f'Error sending email: {e}', 'error')
+
+        return redirect(url_for('retrieve_feedbacks'))
+    return render_template('replyFeedback.html', form=create_reply_feedback_form)
 
 
 if __name__ == '__main__':

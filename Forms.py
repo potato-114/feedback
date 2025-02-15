@@ -19,3 +19,9 @@ class CreateFeedbackForm(Form):
     name = StringField('Name', [validators.Length(min=1, max=100), validators.DataRequired()])
     email = EmailField('Email', [validators.DataRequired()])
     feedback = TextAreaField('Feedback', [validators.DataRequired()])
+
+
+class CreateReplyFeedbackForm(Form):
+    subject = StringField('Subject', [validators.Length(min=1, max=100), validators.DataRequired()])
+    recipient_email = EmailField('Recipient Email', [validators.DataRequired()])
+    message = TextAreaField('Message', [validators.DataRequired()])
